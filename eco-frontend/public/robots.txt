@@ -1,0 +1,22 @@
+# [REPLACE with your real deployed domain before going live, e.g. https://ecoloop.nl]
+# This is a client-rendered single-page app — every route is served from the
+# same index.html, so "Disallow" here only signals crawler intent, it does
+# not restrict access to any separate private files/directories.
+
+User-agent: *
+
+# Public, indexable pages
+Allow: /$
+Allow: /login
+Allow: /register
+Allow: /privacy
+Allow: /terms
+Allow: /cookies
+
+# Authenticated in-app screens make no sense out of context for a crawler,
+# and there is nothing for a search engine to usefully index behind login
+Disallow: /map
+Disallow: /scan
+Disallow: /profile
+
+Sitemap: https://ecoloop.nl/sitemap.xml

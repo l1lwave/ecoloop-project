@@ -1,0 +1,149 @@
+version: '3.9'
+
+services:
+
+  # ── Databases ──────────────────────────────────────────────
+  mysql-auth:
+    image: mysql:8.3
+    container_name: eco-mysql-auth
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-changeme}
+      MYSQL_DATABASE: eco_auth_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-auth-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mysql-scan:
+    image: mysql:8.3
+    container_name: eco-mysql-scan
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-changeme}
+      MYSQL_DATABASE: eco_scan_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-scan-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mysql-location:
+    image: mysql:8.3
+    container_name: eco-mysql-location
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-changeme}
+      MYSQL_DATABASE: eco_location_db
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql-location-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mysql-reward:
+    image: mysql:8.3
+    container_name: eco-mysql-reward
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-changeme}
+      MYSQL_DATABASE: eco_reward_db
+    ports:
+      - "3309:3306"
+    volumes:
+      - mysql-reward-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Microservices ──────────────────────────────────────────
+  api-gateway:
+    build: ./api-gateway
+    container_name: eco-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      JWT_SECRET: ${JWT_SECRET:-changeme-local-dev-jwt-secret-do-not-use-in-production}
+      AUTH_SERVICE_URL: http://auth-service:8081
+      SCAN_SERVICE_URL: http://scan-service:8082
+      LOCATION_SERVICE_URL: http://location-service:8083
+      REWARD_SERVICE_URL: http://reward-service:8084
+    depends_on:
+      - auth-service
+      - scan-service
+      - location-service
+      - reward-service
+
+  auth-service:
+    build: ./auth-service
+    container_name: eco-auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-auth:3306/eco_auth_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-changeme}
+      JWT_SECRET: ${JWT_SECRET:-changeme-local-dev-jwt-secret-do-not-use-in-production}
+      JWT_EXPIRATION_MS: 86400000
+    depends_on:
+      mysql-auth:
+        condition: service_healthy
+
+  scan-service:
+    build: ./scan-service
+    container_name: eco-scan-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-scan:3306/eco_scan_db
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-}
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-changeme}
+    depends_on:
+      mysql-scan:
+        condition: service_healthy
+
+  location-service:
+    build: ./location-service
+    container_name: eco-location-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-location:3306/eco_location_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-changeme}
+    depends_on:
+      mysql-location:
+        condition: service_healthy
+
+  reward-service:
+    build: ./reward-service
+    container_name: eco-reward-service
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-reward:3306/eco_reward_db
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-}
+      SCAN_SERVICE_URL: http://scan-service:8082
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-changeme}
+    depends_on:
+      mysql-reward:
+        condition: service_healthy
+
+volumes:
+  mysql-auth-data:
+  mysql-scan-data:
+  mysql-location-data:
+  mysql-reward-data:

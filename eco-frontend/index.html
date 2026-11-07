@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>EcoLoop — Statiegeld Tracker</title>
+    <meta name="description" content="Find nearby bottle-return points, scan deposit barcodes, and track your recycling impact in the Netherlands." />
+
+    <!--
+      Content-Security-Policy set via <meta> here as drop-in boilerplate.
+      This covers script/style/img/connect sources this app actually needs
+      (Leaflet's own tiles + inline marker styling, Nominatim, the Overpass
+      mirrors in src/api/overpassApi.js, Open Food Facts, and same-origin API
+      calls). Prefer setting this as a real HTTP response header at your
+      reverse proxy/CDN in production — a few directives (e.g. frame-ancestors,
+      report-uri) are ignored entirely when set via <meta> per the CSP spec,
+      and a header is harder for an attacker to strip.
+
+      `ws://localhost:*` in connect-src exists only for Vite's dev-mode HMR
+      websocket — drop it from a hardened, production-only CSP header.
+      CAVEAT: CSP is enforced entirely client-side by the browser, and this
+      session had no browser connected to verify against, so this has NOT
+      been checked for real violations. Watch the browser console for CSP
+      warnings after pulling this in — both under `npm run dev` and a
+      production build — and loosen any directive that legitimately trips.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self';
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' data: https://*.tile.openstreetmap.org;
+      connect-src 'self' ws://localhost:* https://nominatim.openstreetmap.org https://overpass-api.de https://overpass.kumi.systems https://overpass.osm.ch https://world.openfoodfacts.org;
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'self';
+    " />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <!--
+      NOT achievable via <meta> — these have no HTML equivalent and are
+      silently ignored if attempted here. Set them as real HTTP response
+      headers at your reverse proxy / hosting platform instead:
+        Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+        X-Content-Type-Options: nosniff
+        X-Frame-Options: DENY
+        Permissions-Policy: geolocation=(self), camera=(self)
+      (geolocation/camera are used by this app itself, so allow "self";
+      everything else this app doesn't use should stay locked down.)
+    -->
+
+    <!-- PWA: the manifest link is injected by vite-plugin-pwa at build time -->
+    <meta name="theme-color" content="#16a34a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="EcoLoop" />
+    <!-- iOS needs a PNG for the home screen icon. The 192 px PNG is scaled down by iOS. -->
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+
+    <link rel="icon" type="image/svg+xml" href="/eco-icon.svg" />
+  </head>
+  <body class="bg-eco-50">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

@@ -1,0 +1,44 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:3000"
+            allowedMethods: "GET,POST,PUT,DELETE,OPTIONS"
+            allowedHeaders: "*"
+            allowCredentials: true
+      routes:
+        - id: auth-service
+          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/auth/**
+
+        - id: scan-service
+          uri: ${SCAN_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/scan/**
+
+        - id: location-service
+          uri: ${LOCATION_SERVICE_URL:http://localhost:8083}
+          predicates:
+            - Path=/api/locations/**
+
+        - id: reward-service
+          uri: ${REWARD_SERVICE_URL:http://localhost:8084}
+          predicates:
+            - Path=/api/rewards/**
+
+jwt:
+  secret: ${JWT_SECRET:changeme-local-dev-jwt-secret-do-not-use-in-production}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

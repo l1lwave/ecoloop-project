@@ -1,0 +1,33 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: reward-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/eco_reward_db?createDatabaseIfNotExist=true}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    # Run data.sql after Hibernate has created/updated the schema (the UPDATE needs the new column).
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data.sql
+
+# Deposit verification against scan-service (internal endpoint). The token comes only from the environment;
+# when empty, deposits are refused (fail closed).
+scan:
+  service:
+    url: ${SCAN_SERVICE_URL:http://localhost:8082}
+internal:
+  service:
+    token: ${INTERNAL_SERVICE_TOKEN:644cd999ddc585357cac317ba242e7f28a6718639fe94d1d}
